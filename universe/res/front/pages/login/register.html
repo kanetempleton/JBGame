@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+    <title>Register for Game</title>
+</head>
+<body>
+<p><a href="../../index.html"><<< Return to home page</a></p>
+<p><a href="login.html"><<< Return to login page</a></p>
+<h1>Registration Page</h1>
+<p>Please enter username, email, and password.</p>
+<p>* Passwords are now encrypted upon transmission and salted upon storage :)</p>
+<div id = 'Main'>
+  <h2 id = "errorCode"></h2>
+    <h2 id = "statusCode"></h2>
+    <input type="text" name="Username" placeholder="Username" id = "enterUsername"></input><br />
+    <input type="text" name="Email" placeholder="Email" id = "enterEmail"></input><br />
+    <input type="password" name="Password" placeholder="Password" id = "enterPassword"></input><br />
+    <button id="createAccButton" >Create Account</button>
+    <p id="msgText"></p>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="register.js"></script>
+</body>
+</html>

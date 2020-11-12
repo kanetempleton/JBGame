@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+    <title>Log In to Game Webpage</title>
+</head>
+<body>
+<p><a href="../../index.html"><<< Return to home page</a></p>
+<p><a href="../game/play.html">Play game</a> (after logging in)</p>
+<h1>Login Page</h1>
+<p id="pleaseText">Please enter username, email, and password.<br></p>
+<p id="registerText"><a href='register.html'>Click here</a> to register a new user.</p>
+    <div id = 'Main'>
+        <h2 id = "errorCode"></h2>
+        <h2 id = "statusCode"></h2>
+        <input type="text" name="Username" placeholder="Username" id = "enterUsername"></input><br />
+        <!--<input type="text" name="Email" placeholder="Email" id = "enterEmail"></input><br />-->
+        <input type="password" name="Password" placeholder="Password" id = "enterPassword"></input><br />
+        <button id="loginButton" >Log in</button><br />
+        <button id="forgotPassButton" >Forgot Password</button><br/>
+        <p id="msgText"></p>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="login.js"></script>
+</body>
+</html>

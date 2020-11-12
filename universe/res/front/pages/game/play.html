@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+    <title>Play Game</title>
+    <style type="text/css">
+      canvas {
+        border: 1px solid black;
+        display: block;
+        margin: auto;
+       }
+    </style>
+</head>
+<body>
+<p><a href="../../index.html"><<< Return to home page</a></p>
+	<!--- <h1 style="text-align:center;">Gameplay Screen</h1> --->
+<p id="playerInfo"></p>
+<div id = 'Main'>
+    <h2 id = "coordinates"></h2>
+    <h2 id = "statusCode"></h2>
+    <!---<canvas id="canvas" width="740" height="680"></canvas> --->
+    <canvas id="canvas" width="600" height="600"></canvas>
+    <div style="text-align:center;">
+        <p><br></p>
+    <!---<button id="gameDoor">Enter Game</button> --->
+    </div>
+    <p id="msgText"></p>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="module" src="play.js"></script>
+</body>
+</html>
