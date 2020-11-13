@@ -20,7 +20,9 @@ public class Main {
        // Server webserver = new Server(new HTTP("./res/front/",4000));
        // new Thread(webserver).start();
         launcher = new Launcher();
-        launcher.addDatabaseManager("localhost","jbend","root","admin");
+        launcher.addDatabaseManager();
+        //launcher.addDatabaseManager("localhost","jbend","root","admin");
+        //launcher.addDatabaseManager("162.214.93.15","kanetem1_jbend","kanetem1_root","Igloo500!");
         launcher.addLoginHandler();
         launcher.addCareTaker(18000000);
         launcher.addHTTPServer(8069);

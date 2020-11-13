@@ -1,6 +1,6 @@
 
 //var wsUri = "ws://127.0.0.1:42069/ws";
-var wsUri = "ws://kanetempleton.space:42069/ws";
+//var wsUri = "ws://kanetempleton.space:42069/ws";
 
 function trylogin() {
 
