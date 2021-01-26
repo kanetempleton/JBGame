@@ -1,0 +1,15 @@
+head {
+text-align:right;
+}
+body {
+background-color:#2caa90;
+color:#dde487;
+}
+a {
+color:#dde487;
+}
+img {
+display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
