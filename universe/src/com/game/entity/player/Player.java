@@ -5,20 +5,24 @@ import com.server.entity.*;
 import com.Main;
 import java.util.ArrayList;
 import com.game.map.*;
+import com.game.entity.npc.*;
 
-public class Player extends Entity {
+public class Player extends Life {
 
     private String username;
     private ServerConnection connection;
+
+    private NPC attackingNPC;
 
     public Player(ServerConnection c, String name) {
         super();
         setIsPlayer(true);
         this.connection=c;
         this.username = name;
+        attackingNPC=null;
     }
 
-    public void tick() {
+    public void tickLife() {
 
         if (this.connection.getSocket().isClosed()) {
             Main.game().entityManager().removePlayer(this);
@@ -56,6 +60,30 @@ public class Player extends Entity {
             //something else
         //System.out.println("Player " + username + " at " + this.position().toString());
     }
+
+
+    public void die() {
+        //TODO
+    }
+
+    public boolean canAttackNPC(NPC n) {
+        return true;
+    }
+
+    public boolean attackableByNPC(NPC n) {
+        return true;
+    }
+
+
+    private void tickNPCCombat() {
+        if (attackingNPC!=null) {
+            if (canAttackNPC(attackingNPC)) {
+                attackingNPC.appendHit(maxHit);
+            }
+        }
+    }
+
+
 
 
 

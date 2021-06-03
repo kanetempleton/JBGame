@@ -24,7 +24,7 @@ const URL=''
 	}
 
     var pw2 = rsaEncrypt(5,38407,pw);
-	const sendme={
+	const sendme = {
 	    packet:1,
 		username:un,
 		password:pw2,

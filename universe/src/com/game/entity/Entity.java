@@ -14,9 +14,22 @@ public abstract class Entity {
     private boolean needsUpdate;
     private boolean isPlayer;
 
+
     public Entity() {
         gameID=-1;
         entityID=-1;
+        pos = new Vector();
+        pos_prev = new Vector();
+        vel = new Vector();
+        accel = new Vector();
+        noclip=false;
+        needsUpdate=false;
+        isPlayer=false;
+    }
+
+    public Entity(int gid, int eid) {
+        gameID=gid;
+        entityID=eid;
         pos = new Vector();
         pos_prev = new Vector();
         vel = new Vector();
@@ -102,5 +115,10 @@ public abstract class Entity {
     }
 
     public abstract void tick();
+
+
+    public static final int ENTITY_ID_NPC_BASE = 0;
+    public static final int ENTITY_ID_ITEM_BASE = 1000000;
+    public static final int ENTITY_ID_OBJECT_BASE = 2000000;
 
 }

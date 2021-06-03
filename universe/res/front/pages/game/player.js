@@ -1,9 +1,12 @@
+import client from './client.js'
+
 export default class player {
-    constructor(name,x,y,z) {
+    constructor(name,x,y,z,ws) {
         this.username = name;
         this.absX = x;
         this.absY = y;
         this.absZ = z;
+        this.connection = new client(ws);
     }
 
     updatePos(x,y,z) {

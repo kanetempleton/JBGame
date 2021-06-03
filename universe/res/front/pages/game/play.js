@@ -62,8 +62,12 @@ var state=0;
 
 import menu from './menu.js'
 import player from './player.js'
+import gamecanvas from './canvas.js'
+
 var sideMenu;
 var yourPlayer;
+var gamewindow;
+var client;
 
 function init2() {
     SpriteSheet = new spritestore(ctx,100);
@@ -73,7 +77,7 @@ function init2() {
 function init()
 {
     init2();
-    for (var i=0;i<50;i++)
+   /* for (var i=0;i<50;i++)
         cmap.push([]);
     var k=0;
     for (var i=0;i<50;i++) {
@@ -84,8 +88,8 @@ function init()
             map4[k]=4;
             k++;
         }
-    }
-    constructMap();
+    }*/
+    //constructMap();
     drawLoginScreen();
     //testWebSocket();
 }
@@ -207,17 +211,20 @@ var opened = 0;
             waitingForReply=false;
             drawLoginScreen();
         }
-        else if (payload.startsWith("hereyouare:")) {
+        else if (payload.startsWith("hereyouare:")) { //BEGIN GAMEPLAY NOW
             waitingForReply=false;
             var posx = payload.split(":")[1].split(",")[0];
             var posy = payload.split(":")[1].split(",")[1];
             posz = payload.split(":")[1].split(",")[2];
-            yourPlayer = new player(usrName,posx,posy,posz);
+            yourPlayer = new player(usrName,posx,posy,posz,websocket);
             sideMenu.flagReady(yourPlayer);
+            gamewindow = new gamecanvas(SpriteSheet,ctx,yourPlayer);
+            if (imgloaded[0])
+                gamewindow.map.setMapSheet(cache_mapsheet);
             console.log("coords are "+yourPlayer.absX+","+yourPlayer.absY+","+posz);
-            var relx = relativeCoords(posx,posy)[0];
-            var rely = relativeCoords(posx,posy)[1];
-            checkLoginMaps(relx,rely);
+            var relx = gamewindow.map.relativeCoords(posx,posy)[0];
+            var rely = gamewindow.map.relativeCoords(posx,posy)[1];
+            gamewindow.map.checkLoginMaps(relx,rely);
 
             state=1;
             canvas.width = 840; //740
@@ -240,7 +247,7 @@ var opened = 0;
             var mdat = payload.split(";")[2].split(" ");
             var ccmap = [];
             console.log("attempting fillmap on: "+msec+":"+mcodefill);
-            fillMap(parseInt(msec),mcodefill,mdat);
+            gamewindow.map.fillMap(parseInt(msec),mcodefill,mdat);
            /* for (var i=0; i<mdat.length; i++) {
                 //console.log("mdat["+i+"]="+mdat[i]);
                 ccmap[i%50]=mdat[i];
@@ -249,7 +256,7 @@ var opened = 0;
                 //cmap[i/50][i%50]=mdat[i];
                 map1[i]=mdat[i];
             }*/
-            constructMap();
+            gamewindow.map.constructMap();
             if (imgloaded[0]==1&&imgloaded[1]==1&&imgloaded[2]==1)
                 paintgame();
                 else
@@ -269,7 +276,7 @@ var opened = 0;
             posz = tposz;
             yourPlayer.updatePos(xx,yy,posz);
             console.log("checkmaps("+dx+","+dy+")");
-            checkMaps(dx,dy);
+            gamewindow.map.checkMaps(dx,dy);
           //  drawSomeImage();
             paintgame();
         }
@@ -349,40 +356,40 @@ var cache_plrimg;
 var cache_plr2img;
 
 
+function drawCanvas() {
+    gamewindow.paint();
+}
+
+
 
 function paintgame() {
     if (imgloaded[0]==1 && imgloaded[1]==1 && imgloaded[2]==1 && imgloaded[3]==1) {
         ctx.fillStyle = 'silver';
-              //ctx.fillRect(0,520,740,680);
-             // ctx.fillRect(520,0,860,600) //520,0,740,600
-              sideMenu.draw(ctx);
-              //ctx.drawImage(plr,0,0,64,64,240,240,40,40);
-             // ctx.drawImage(cache_logoutbutton,logoutButtonDim[0],logoutButtonDim[1]);
-              drawMap(cache_mapsheet,spriteSheet(),map);
-             // yourPlayer.draw(ctx,cache_plrimg);
-                SpriteSheet.drawScaledSpriteAt('player',280,280,40,40);
 
-               ctx.fillStyle = 'black';
-                             ctx.fontWeight = 400;
-                             var relXX = relativeCoords(yourPlayer.absX,yourPlayer.absY)[0];
-                             var relYY = relativeCoords(yourPlayer.absX,yourPlayer.absY)[1];
-                             ctx.fillText(relXX+","+relYY,650,10); //8,670*/
-              //ctx.drawImage(cache_plrimg,0,0,64,64,280,280,40,40);
+        //draw side menu bar
+        sideMenu.draw(ctx);
 
+        // draw the entire game canvas
+        drawCanvas();
+
+        //draw player
+       // SpriteSheet.drawScaledSpriteAt('player',280,280,40,40);
+
+        //draw your relative coordinates
+       ctx.fillStyle = 'black';
+       ctx.fontWeight = 400;
+       var relXX = gamewindow.map.relativeCoords(yourPlayer.absX,yourPlayer.absY)[0];
+       var relYY = gamewindow.map.relativeCoords(yourPlayer.absX,yourPlayer.absY)[1];
+        ctx.fillText(relXX+","+relYY,650,10); //8,670*/
+
+        //draw other players
               if (otheri>0) {
               for (var i=0; i<otheri; i++) {
                 if (otherid[i]!=-1) {
                     var xdif = otherx[i]-yourPlayer.absX;
                     var ydif = othery[i]-yourPlayer.absY;
                     if (xdif < 7 && xdif > -7 && ydif < 7 && ydif > -7) {
-                   // if (otherx[i] >= (yourPlayer.absX - 7) && otherx[i] <= (yourPlayer.absX + 7)
-                   //     && othery[i] >= (yourPlayer.absY - 7) && othery[i] <= (yourPlayer.absY + 7)) {
-                   //     var xdif = otherx[i]-yourPlayer.absX;
-                   //     var ydif = othery[i]-yourPlayer.absY;
-                       // console.log("xdif="+xdif+",ydif="+ydif);
                         ctx.drawImage(cache_plr2img,0,0,64,64,280+xdif*40,280+ydif*40,40,40);
-                       // ctx.fillRect(520,0,740,600)
-                    //}
                     }
                 }
               }
@@ -463,6 +470,7 @@ function drawSomeImage() {
                             imgloaded[0]=1;
                             cache_mapsheet=mapimg;
                             paintgame();
+                            gamewindow.map.setMapSheet(mapimg);
                             },false);
 
     mapimg.src = '../../sprites/map/standardtiles.png'; // Set source path
@@ -478,21 +486,6 @@ function drawSomeImage() {
 
 //ss arg never used
 //m arg never used
-function drawMap(img, ss, m) {
-    var k=0;
-    var f = 0;
-
-    for (var i=0; i<15; i++) {
-        for (var j=0; j<15; j++) {
-            //drawSprite(img,ss,nameForID(m[k]),j*40,i*40);
-            //console.log("drawing "+m[j][i]);
-            //drawSpriteSimple(img,m[k],j*40,i*40);
-            //console.log("vistile:"+visibleTiles(yourPlayer.absX,yourPlayer.absY));
-            drawSpriteSimple(img,visibleTiles(yourPlayer.absX,yourPlayer.absY)[k],j*40,i*40);
-            k++;
-        }
-    }
-}
 
 function drawSprite(img, ss, name, x, y) {
 
@@ -518,55 +511,6 @@ function spriteOffset(ss,spriteID) {
     return p;
 }
 
-function spriteSheet() {
-    var s = ["grass","dark_grass","light_grass",
-            "sand","ocean_water","swamp_water",
-            "dirt","stream_water","planks"];
-   return s;
-}
-
-function nameForID(x) {
-    switch (x) {
-        case 0:
-            return "grass";
-        case 1:
-            return "sand";
-        case 2:
-            return "dirt";
-        case 3:
-            return "dark_grass";
-        case 4:
-            return "ocean_water";
-        case 5:
-            return "stream_water";
-        case 6:
-            return "light_grass";
-        case 7:
-            return "swamp_water";
-        case 8:
-            return "planks";
-    }
-    return "null";
-}
-
-function mapData() {
-    var m = [   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-    return m;
-}
 
 var initLogin = 0;
 function initLoginScreen() {
@@ -847,21 +791,6 @@ function submitLogout() {
     drawLoginScreen();
 }
 
-function visibleTiles(x,y) {
-    //var relX = x%100;
-    //var relY = y%100;
-    var relX = relativeCoords(x,y)[0];
-    var relY = relativeCoords(x,y)[1];
-    var tiles = [];
-    var k=0;
-    for (var i=0; i<15; i++) {
-        for (var j=0; j<15; j++) {
-            tiles[k]=tileAt(relX-7+j,relY-7+i);
-            k++;
-        }
-    }
-    return tiles;
-}
 //111,801 = 11,1    11-6+j, 1-6+i
 /*function tileAt(cX, cY) {
     if (cX<0 || cY<0 || cX>=50 || cY>=50)
@@ -871,398 +800,5 @@ function visibleTiles(x,y) {
     return map[50*cX + cY];
 }*/
 //tileAt(25,3): map[2500+3] = map[2503]
-function tileAt(cX, cY) {
-    if (cX<0 || cY<0 || cX>=100 || cY>=100)
-        return 8;
-    if (100*cX+cY < 0 || 100*cX+cY >= 10000)
-        return 8;
-    return map[100*cX + cY];
-}
-
-
-function constructMap() {
-    var k=0;
-    var j=0;
-    var ii=0;
-    var jj=0;
-
-    for (var i=0; i<10000; i++) {
-        if (i<5000) {
-            if (i%100 < 50)
-                map[i]=map1[j++];
-            else
-                map[i]=map3[k++];
-        } else {
-            if (i%100<50)
-                map[i]=map2[ii++];
-            else
-                map[i]=map4[jj++];
-        }
-    }
-}
-
-
-function fillMap(mapno, mapsection, mdat) {
-    switch (mapno) {
-        case 1:
-            for (var i=0; i<mdat.length; i++) {
-                map1[i]=mdat[i]
-                map1_section=mapsection;
-            }
-            break;
-        case 2:
-            for (var i=0; i<mdat.length; i++) {
-                map2[i]=mdat[i]
-                map2_section=mapsection;
-            }
-            break;
-        case 3:
-            for (var i=0; i<mdat.length; i++) {
-                map3[i]=mdat[i]
-                map3_section=mapsection;
-            }
-            break;
-        case 4:
-            for (var i=0; i<mdat.length; i++) {
-                map4[i]=mdat[i]
-                map4_section=mapsection;
-            }
-            break;
-    }
-    constructMap();
-    paintgame();
-}
-
-function requestMap(mapno, mapx, mapy) {
-    console.log("[!!!!!!!!!!!!!!!!!!!!!]request:map;"+mapno+";"+mapx+";"+mapy+";;"+yourPlayer.absX+","+yourPlayer.absY+"");
-    var mc = mapcode(mapx,mapy);
-    var flag = 0;
-    switch (mapno) {
-        case 1:
-            if (map1_section!=mc) {
-                flag=1;
-            }
-            break;
-        case 2:
-            if (map2_section!=mc) {
-                flag=1;
-            }
-            break;
-        case 3:
-            if (map3_section!=mc) {
-                flag=1;
-            }
-            break;
-        case 4:
-            if (map4_section!=mc) {
-                flag=1;
-            }
-            break;
-    }
-    if (flag==1) {
-        sendGamePacket("request:map;"+mapno+";"+mapx+";"+mapy);
-    }
-}
-
-
-
-var MAP_REQUEST_DISTANCE = 15;
-var MAP_SHIFT_DISTANCE = 15;
-
-function checkMaps(dx,dy) {
-   // var relX = (yourPlayer.absX+relX_offset)%100;
-   // var relY = (yourPlayer.absY+relY_offset)%100;
-    var relX = relativeCoords(yourPlayer.absX,yourPlayer.absY)[0];
-        var relY = relativeCoords(yourPlayer.absX,yourPlayer.absY)[1];
-
-    if (dx==0 && dy==0)
-        return;
-    console.log("checking MAPS");
-    var thisisalwayszero = 0; //modern problems require coronavirus
-    if (thisisalwayszero==0) { //only moving in x-direction; left or right
-        if (dx>0) { //moving right
-            if (relX < 50 && relX >= (50-MAP_REQUEST_DISTANCE)) {
-               // requestMap(2*(parseInt(relY/50)+1),yourPlayer.absX+50,yourPlayer.absY); //load map 2 from 1 or 4 from 3.. or load both?
-               if (relY < 50) {
-                    requestMap(2,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY));
-                    requestMap(4,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY)+50);
-               } else {
-                    requestMap(2,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY)-50);
-                    requestMap(4,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY));
-               }
-            }
-            else if (relX >= (100-MAP_REQUEST_DISTANCE)) {
-                //shift map left
-                shiftMap('left');
-            }
-        } else if (dx<0) { //moving left
-            if (relX >= 50 && relX < (50+MAP_REQUEST_DISTANCE)) {
-               // requestMap(2*parseInt(relY/50)+1,yourPlayer.absX-50,yourPlayer.absY); //load map 1 from 2 or 3 from 4 nah do both
-               if (relY < 50) {
-                   requestMap(1,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY));
-                   requestMap(3,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY)+50);
-               } else {
-                   requestMap(1,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY)-50);
-                   requestMap(3,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY));
-               }
-            }
-            else if (relX <= MAP_REQUEST_DISTANCE) {
-                //shift map right
-                shiftMap('right');
-            }
-        }
-    }
-    /*else*/ if (thisisalwayszero==0) { //only moving in y-direction; up or down
-        if (dy>0) { //moving down
-            if (relY < 50 && relY >= (50-MAP_REQUEST_DISTANCE)) {
-                //request bottom map(s)
-                if (relX < 50) {
-                    requestMap(3,parseInt(yourPlayer.absX),parseInt(yourPlayer.absY)+50);
-                    requestMap(4,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY)+50);
-                } else {
-                    requestMap(3,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY)+50);
-                    requestMap(4,parseInt(yourPlayer.absX),parseInt(yourPlayer.absY)+50);
-                }
-            }
-            else if (relY >= (100-MAP_REQUEST_DISTANCE)) {
-                //shift map up
-                shiftMap('up');
-            }
-        } else if (dy<0) { //moving up
-            if (relY >= 50 && relY < (50+MAP_REQUEST_DISTANCE)) {
-                if (relX < 50) {
-                    requestMap(1,parseInt(yourPlayer.absX),parseInt(yourPlayer.absY)-50);
-                    requestMap(2,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY)-50);
-                } else {
-                    requestMap(1,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY)-50);
-                    requestMap(2,parseInt(yourPlayer.absX),parseInt(yourPlayer.absY)-50);
-                }
-            }
-            else if (relY < MAP_REQUEST_DISTANCE) {
-                shiftMap('down');
-            }
-        }
-    }
-}
-
-
-function shiftMap(dir) {
-    /*var relX = (yourPlayer.absX+relX_offset)%100;
-    var relY = (yourPlayer.absY+relY_offset)%100;*/
-    var relX = relativeCoords(yourPlayer.absX,yourPlayer.absY)[0];
-    var relY = relativeCoords(yourPlayer.absX,yourPlayer.absY)[1];
-
-    if (dir == 'right') {
-        if (relX>=50) {
-            console.log("illegal right shift!");
-            return;
-        }
-        fillMap(2,map1_section,map1);
-        fillMap(4,map3_section,map3);
-       // relX_offset = 50 - relX_offset;
-        if (relY < 50) {
-            requestMap(1,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY));
-            requestMap(3,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY)+50);
-        } else {
-            requestMap(1,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY)-50);
-            requestMap(3,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY));
-        }
-    }
-    else if (dir == 'left') {
-        if (relX<50) {
-            console.log("illegal left shift!");
-            return;
-        }
-        fillMap(1,map2_section,map2);
-        fillMap(3,map4_section,map4);
-     //   relX_offset = -50 - relX_offset; //i haz bad feels about this
-        if (relY < 50) {
-            requestMap(2,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY));
-            requestMap(4,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY+50));
-        } else {
-            requestMap(2,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY)-50);
-            requestMap(4,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY));
-        }
-    }
-    else if (dir == 'down') {
-        if (relY >= 50) {
-            console.log("illegal down shift!");
-            return;
-        }
-        fillMap(3,map1_section,map1);
-        fillMap(4,map2_section,map2);
-   //     relY_offset = 50 - relY_offset;
-        if (relX < 50) { //maybe re-compute these relX/relY variables b4 checking? figure it out
-            requestMap(1,parseInt(yourPlayer.absX),parseInt(yourPlayer.absY)-50);
-            requestMap(2,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY)-50);
-        } else {
-            requestMap(1,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY)-50);
-            requestMap(2,parseInt(yourPlayer.absX),parseInt(yourPlayer.absY)-50);
-        }
-
-    }
-    else if (dir == 'up') {
-        if (relY < 50) {
-            console.log("illegal up shift!");
-            return;
-        }
-        fillMap(1,map3_section,map3);
-        fillMap(2,map4_section,map4);
-   //     relY_offset = -50 - relY_offset;
-        if (relX < 50) {
-            requestMap(3,parseInt(yourPlayer.absX),parseInt(yourPlayer.absY)+50);
-            requestMap(4,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY)+50);
-        } else {
-            requestMap(3,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY)+50);
-            requestMap(4,parseInt(yourPlayer.absX),parseInt(yourPlayer.absY)+50);
-        }
-    }
-    paintgame();
-}
-
-
-function checkLoginMaps(rx,ry) {
-    if (rx < MAP_REQUEST_DISTANCE) {
-        shiftMap('right');
-        console.log("loginrequestmapright");
-    }
-    if (ry < MAP_REQUEST_DISTANCE) {
-        shiftMap('down');
-        console.log("loginrequestmapdown");
-    }
-    if (rx >= 50-MAP_REQUEST_DISTANCE) {
-        requestMap(2,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY));
-        console.log("loginrequestmap2");
-       // requestMap(3,parseInt(yourPlayer.absX)-50,parseInt(yourPlayer.absY)+50);
-        //shiftMap('left');
-    }
-    if (ry >= 50-MAP_REQUEST_DISTANCE) {
-          //  requestMap(2,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY));
-            requestMap(3,parseInt(yourPlayer.absX),parseInt(yourPlayer.absY)+50);
-            console.log("loginrequestmap3");
-            //shiftMap('left');
-    }
-    if (ry >= 50-MAP_REQUEST_DISTANCE && rx >= 50-MAP_REQUEST_DISTANCE) {
-              //  requestMap(2,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY));
-              //requestMap(2,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY));
-                requestMap(4,parseInt(yourPlayer.absX)+50,parseInt(yourPlayer.absY)+50);
-                //shiftMap('left');
-                console.log("loginrequestmap4");
-    }
-}
-
-
-//map technical stuff
-
-function relativeCoords(absx, absy) { //server coords [10000x10000] --> client coords [100x100]
-    var s = sectionCoords(absx,absy);
-   // console.log("section coords:"+s[0]+","+s[1]);
-    var m = mapcode(absx,absy);
-  //  console.log("mapcode: "+m);
-    var n = sectionForMapCode(m);
-    if (n==-1) {
-
-    }
- //   console.log("section: "+n);
-    var L = CAMERA_BOX_SIZE;
-    if (n%2==0)
-        s[0]=s[0]+50;
-    if (n>2)
-        s[1]=s[1]+50;
-    return s;
-}
-
-
-
-function mapcode(absx,absy) {
-    var x_div50 = parseInt(absx/50);
-    var y_div50 = parseInt(absy/50);
-    return 100000000 + x_div50*10000 + y_div50;
-}
-
-function sectionCoords(absx,absy) {
-    var p = [0,0];
-    p[0] = absx%50;
-    p[1] = absy%50;
-    return p;
-}
-
-function sectionForMapCode(mapcode) {
-    if (map1_section==mapcode)
-        return 1;
-    if (map2_section==mapcode)
-        return 2;
-    if (map3_section==mapcode)
-        return 3;
-    if (map4_section==mapcode)
-        return 4;
-    return -1;
-}
-
-
-//not used yet:
-
-function mapcodeForSection(sectionNum) {
-    switch (sectionNum) {
-        case 1:
-            return map1_section;
-        case 2:
-            return map2_section;
-        case 3:
-            return map3_section;
-        case 4:
-            return map4_section;
-    }
-    return -1;
-}
-
-
-function absoluteCoords(relx,rely) {
-    var s = sectionForRelativeCoords(relx,rely);
-    var mc = mapcodeForSection(s);
-    var p = sectionStartPos(mc);
-    p[0] = p[0] + relx%50;
-    p[1] = p[1] + rely%50;
-    return p;
-}
-
-
-function sectionStartPos(mcode) {
-    var a = parseInt(mcode/10000) - 10000;
-    var b = mcode-100000000 - a*10000;
-    var p = [a*50,b*50];
-    return p;
-    //100020016; a=2, b=16
-    /* mcode/10000 = 10002 - 10000 = 2
-     =>     a = parseInt(m/10000) - 10000       (100020016/10000-10000) = 2.0016
-            b = m-100000000 - a*10000           100020016-100000000-(((100020016/10000-10000)-.0016))*10000  = 16
-            */
-}
-
-
-
-function absoluteFromScreenCoords(scrX,scrY) {
-    //btwn 0 and 14, your screen pos = (7,7)
-    // (7,7) - scr(x,y)
-   // var p = [yourPlayer.absX - scrX, yourPlayer.absY - scrY];
-   var r = relativeCoords(yourPlayer.absX,yourPlayer.absY);
-   //TODO
-}
-
-
-function sectionForRelativeCoords(rX,rY) {
-    if (rX<50 && rY<50)
-        return 1;
-    if (rx>=50&&rY<50)
-        return 2;
-    if (rx<50&&rY>=50)
-        return 3;
-    if (rx>=50&&rY>=50)
-        return 4;
-}
-
-
-
-var CAMERA_BOX_SIZE = 15;
 
 window.addEventListener("load", init, false);

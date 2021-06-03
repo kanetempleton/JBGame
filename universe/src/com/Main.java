@@ -17,14 +17,12 @@ public class Main {
 
     public static void main(String[] args) {
         System.out.println("main'd");
-       // Server webserver = new Server(new HTTP("./res/front/",4000));
-       // new Thread(webserver).start();
         launcher = new Launcher();
         launcher.addDatabaseManager();
-        //launcher.addDatabaseManager("localhost","jbend","root","admin");
-        //launcher.addDatabaseManager("162.214.93.15","kanetem1_jbend","kanetem1_root","Igloo500!");
         launcher.addLoginHandler();
         launcher.addCareTaker(18000000);
+        launcher.addHTTPServer(80);
+        //launcher.getHTTPServer(80).addRoute("gamedev","pages/gamedev/index.html");
         launcher.addHTTPServer(8069);
         launcher.addHTTPServer("res/front/apiweb/",8070);
         launcher.addTCPServer(43594);
@@ -38,6 +36,8 @@ public class Main {
         game = new Engine();
         launcher.loadThread(game);
         launcher.startThreads();
+        ((HTTP)launcher.getHTTPServer(80).getAPI()).addRoute("/gamedev","pages/gamedev/index.html");
+       // ((HTTP)launcher.getHTTPServer(80).getAPI()).addRoute("/devstyle.css","pages/gamedev/devstyle.css");
     }
 
     public static Engine game() {return game;}
